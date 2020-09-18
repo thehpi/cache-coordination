@@ -1,0 +1,39 @@
+version: '2.1'
+services:
+    payara:
+        image: payara/server-full:latest
+        container_name: payara1
+        environment:
+        - PAYARA_ARGS=--debug
+        ports: 
+         - "18080:8080"
+         - "18181:8181"
+         - "18443:8443"
+         - "14848:4848"
+         - "19009:9009"
+    payara2:
+        image: payara/server-full:latest
+        container_name: payara2
+        environment:
+        - PAYARA_ARGS=--debug
+        ports: 
+         - "28080:8080"
+         - "28181:8181"
+         - "28443:8443"
+         - "24848:4848"
+         - "29009:9009"
+    db:
+        image: postgres:9.6-alpine
+        container_name: db
+        environment:
+        - POSTGRES_PASSWORD=database
+        - POSTGRES_USER=database
+        - POSTGRES_DB=database
+        ports:
+        - "5432:5432"
+        command: postgres -c max_prepared_transactions=100 -c max_connections=200
+        volumes:
+        - my-datavolume:/var/lib/postgresql/data
+volumes:
+  my-datavolume:
+
