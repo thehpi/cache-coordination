@@ -8,6 +8,7 @@ import javax.persistence.PersistenceContext;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.UUID;
 
 @Path("hello")
@@ -16,6 +17,14 @@ public class RestResource {
 
   @PersistenceContext
   private EntityManager em;
+
+  @Path("world")
+  @GET
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+  public List<World> getAll(World world)
+  {
+    return this.em.createQuery("select a from World a", World.class).getResultList();
+  }
 
   @Path("world")
   @POST

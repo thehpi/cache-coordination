@@ -1,24 +1,22 @@
 package nl.thehpi.entities;
 
-import javax.json.bind.annotation.JsonbProperty;
+import org.eclipse.persistence.annotations.Cache;
+import org.eclipse.persistence.annotations.CacheCoordinationType;
+
 import javax.persistence.Cacheable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
 @Cacheable(true)
+@Cache(coordinationType =  CacheCoordinationType.SEND_OBJECT_CHANGES)
+//@Cache(coordinationType =  CacheCoordinationType.INVALIDATE_CHANGED_OBJECTS)
+//@Cache(coordinationType =  CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
+//@Cache(coordinationType =  CacheCoordinationType.NONE)
 public class World {
     @Id
     private String id;
 
-    @XmlElement(name = "field1")
-    @JsonbProperty("field1")
     private String field1;
 
     public String getId() {

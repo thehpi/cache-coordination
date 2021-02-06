@@ -4,6 +4,24 @@ This project attempts to get cache coordination working as implemented by hazelc
 
 The project was created to support [this](https://stackoverflow.com/questions/63940674/setup-eclipselink-cache-coordination-in-payara) stackoverflow question.
 
+UPDATE: The problem is fixed, the issue was that the discovery mode is 'domain' by default which makes sense in a payara cluster. But in this case there is no DAS and no cluster but simply two payara (DAS) instances. So setting the hazelcast cluster mode to multicast solves the problem. This works in this case because both docker instances are started using docker-compose and share the same network so multicast works.
+
+I also found that using payara specific annotations in a JPA entity it is possible to instruct eclipselink how to synchronize the cache. See [here](https://www.eclipse.org/eclipselink/documentation/2.7/solutions/scaling002.htm#CEGCABII) for more info.
+
+	// only sends changed objects, so new objects need to be queried in other nodes
+	@Cache(coordinationType =  CacheCoordinationType.SEND_OBJECT_CHANGES)
+
+	// only sends a invalidation notification. This triggers the object to be removed from the 2nd level cache.
+	@Cache(coordinationType =  CacheCoordinationType.INVALIDATE_CHANGED_OBJECTS)
+
+	// Sends changed but also new objects. Effectively this keeps the 2nd level cache completely in sync.
+	@Cache(coordinationType =  CacheCoordinationType.SEND_NEW_OBJECTS_WITH_CHANGES)
+
+	// Don't synchronize
+	@Cache(coordinationType =  CacheCoordinationType.NONE)
+
+I find the first two very usefull and would use the second for large objects.
+
 # Requirements
 
 - java8
@@ -46,8 +64,8 @@ Register database
 
 Enable Hazelcast
 
-	docker exec -ti payara1 asadmin set-hazelcast-configuration --enabled=true
-	docker exec -ti payara2 asadmin set-hazelcast-configuration --enabled=true
+	docker exec -ti payara1 asadmin set-hazelcast-configuration --enabled=true --clustermode=multicast --multicastgroup 224.2.2.3 --multicastport 54327
+	docker exec -ti payara2 asadmin set-hazelcast-configuration --enabled=true --clustermode=multicast --multicastgroup 224.2.2.3 --multicastport 54327
 
 Build
 
@@ -170,3 +188,5 @@ Server 2
 ```
 
 As you see the value is still 'test' so cache coordination did not work.
+
+UPDATE: after setting clustermode to multicast it works so field1 is now 'test2'. If it is not test2 then run the get again, maybe it took a few milliseconds for it to propagate.
